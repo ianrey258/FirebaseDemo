@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+
 
 void main() => runApp(MyApp());
 
@@ -26,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String id;
+  String id,datetxt;
   final db = Firestore.instance;
 
   TextEditingController eventTitle = TextEditingController();
@@ -92,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     ),
                   ),
+                  Expanded(
+                    child: calendar(),
+                  ),
                 ],
               ),
               Row(
@@ -152,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
 void createData() async {
     final evt = eventTitle.text;
     final act = activity.text;
-    final dt = date.text;
+    final dt = datetxt;
     DocumentReference ref = await db.collection('task').add({'Title': '$evt','Activity': '$act','Date': '$dt'});
     setState(() => id = ref.documentID);
     print(ref.documentID);
@@ -178,6 +183,7 @@ void createData() async {
       eventTitle.text ="";
       activity.text ="";
       date.text ="";
+      datetxt="";
     });
   }
 
@@ -212,7 +218,7 @@ Card buildItem(DocumentSnapshot doc) {
                 ),
                 SizedBox(width: 8),
                 FlatButton(
-                  color: Colors.red,
+                  color: Colors.red,  
                   onPressed: () => deleteData(doc),
                   child: Text('Delete'),
                 ),
@@ -220,6 +226,25 @@ Card buildItem(DocumentSnapshot doc) {
             )
           ],
         ),
+      ),
+    );
+  }
+  Widget calendar(){
+    return Container(
+      padding: EdgeInsets.only(right: 130),
+      child: IconButton(
+        icon: Icon(Icons.calendar_today),
+        onPressed: (){setState(() {
+          String yr;String m;String d;
+          DatePicker.showDatePicker(context,showTitleActions: true,minTime: DateTime(2017, 1, 1),maxTime: DateTime(2023, 12, 1), 
+          onConfirm: (cdate) {
+            yr = cdate.year.toString();m = cdate.month.toString();d = cdate.day.toString();
+            date.text="$yr-$m-$d";
+            datetxt = "$m-$d-$yr";
+          },
+          currentTime: DateTime.now(), 
+          locale: LocaleType.en);
+        });},
       ),
     );
   }
